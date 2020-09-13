@@ -44,18 +44,28 @@ Anisotropic Elliptic:
 */
 int main(int argc, char *argv[]){
 	
-	unsigned long lifeOption = atoi(argv[1]);
-	unsigned long option = atoi(argv[2]);
-	double timeStop = atof(argv[3]);
-	double timeGaussStop = atof(argv[4]);
-	double sigma = atof(argv[5]);
-	unsigned long a = atoi(argv[6]);
-	double omg = atof(argv[7]);
+	unsigned long lifeOption = atoi(argv[1]);	//0
+	unsigned long option = atoi(argv[2]);		//0
+	double timeStop = atof(argv[3]);			//200
+	double timeGaussStop = atof(argv[4]);		//1000
+	double sigma = atof(argv[5]);				//0.1
+	double omg = atof(argv[6]);					//0.3
+	unsigned long nVert = atoi(argv[7]);		//1		//nVertices
 	
 	CDT2d cdt;
+
+	int iVert = 0;
+	double *vertX, *vertY;
+	vertX = Malloc(MAX_NUMBER_OF_DIR, double);
+	vertY = Malloc(MAX_NUMBER_OF_DIR, double);
+	while (iVert < nVert){
+		vertX[iVert] = atof(argv[8 + 2*iVert]);
+		vertY[iVert] = atof(argv[8 + 2*iVert + 1]);
+		iVert++;
+	}
 	
-	EmptyCDT2d(&cdt,a);
-	InitCDT2d(&cdt);
+	EmptyCDT2d(&cdt,1);
+	InitCDT2d(&cdt,nVert,vertX,vertY);
 
 	// STIT Isotropic
 	if (option == 0){
@@ -68,7 +78,7 @@ int main(int argc, char *argv[]){
 	else if ((option == 1) || (option == 2)){
 		unsigned long nDir = atoi(argv[8]);
 		double *angleDir, *probDir;
-		if (nDir > MAX_NUMBER_OF_DIR){
+		if (nDir > MAX_NUMBER_OF_DIR){	//MAX_NUMBER_OF_DIR = 32
 			fprintf(stderr,"The number of directions must be less or equal than %d.\n",MAX_NUMBER_OF_DIR);
 			exit(EXIT_FAILURE);		
 		}

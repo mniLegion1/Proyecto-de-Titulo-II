@@ -37,50 +37,45 @@ int EmptyCDT2d(CDT2d *cdt, unsigned long size){
 /** @function: InitCDT2d
 	--------------------
 **/
-void InitCDT2d(CDT2d *cdt){
-	unsigned long is;
-	double winSize = (double) (cdt->size);
+void InitCDT2d(CDT2d *cdt,unsigned long nVert, double *vertX, double *vertY){
+	unsigned long iVert;
+	double restX, restY;
 	
 	// random seed is initialized.
  	srandom(time(NULL));
  	
-	cdt->Polygon[0].numberOfVertices = 4;
-	cdt->Polygon[0].V = (double **)calloc2d(4, 2, sizeof(double));
+	cdt->Polygon[0].numberOfVertices = nVert;
+	cdt->Polygon[0].V = (double **)calloc2d(nVert, 2, sizeof(double));
 
-	cdt->Polygon[0].V[0][0] = 0.0; cdt->Polygon[0].V[0][1] = 0.0;
-	cdt->Polygon[0].V[1][0] = winSize; cdt->Polygon[0].V[1][1] = 0.0;
-	cdt->Polygon[0].V[2][0] = winSize; cdt->Polygon[0].V[2][1] = winSize;
-	cdt->Polygon[0].V[3][0] = 0.0; cdt->Polygon[0].V[3][1] = winSize;
-	
+	//Polygon.V = vertX,vertY
+	for (iVert = 0; iVert < nVert; iVert++){
+		cdt->Polygon[0].V[iVert][0] = vertX[iVert];
+		cdt->Polygon[0].V[iVert][1] = vertY[iVert];
+	}
+		
+	(cdt->numberOfPolygons)++;
+
+	//window edges (x,y) --> (vertX,vertY)
+	for (iVert = 0; iVert < nVert; iVert++){
+		if(iVert != nVert-1){
+			cdt->I_Segment[iVert].x0 = vertX[iVert], cdt->I_Segment[iVert].y0 = vertX[iVert];
+			cdt->I_Segment[iVert+1].x0 = vertX[iVert+1], cdt->I_Segment[iVert+1].y0 = vertX[iVert+1];
+		}
+		else
+		{
+			cdt->I_Segment[iVert].x0 = vertX[iVert], cdt->I_Segment[0].y0 = vertX[iVert];
+			cdt->I_Segment[iVert+1].x0 = vertX[0], cdt->I_Segment[iVert+1].y0 = vertX[0];
+		}
+		restX = cdt->I_Segment[iVert+1].x0 - cdt->I_Segment[iVert].x0;
+		restY = cdt->I_Segment[iVert+1].y0 - cdt->I_Segment[iVert].y0;
+		cdt->I_Segment[iVert].beta = 0.0;
+		cdt->I_Segment[iVert].length = sqrt((restX*restX) + (restY*restY));
+	}
+
 	WidthFunction(cdt, cdt->Polygon);
 	PerimeterPolygon(cdt->Polygon);
 	AreaPolygon(cdt->Polygon);
 	RoundnessPolygon(cdt->Polygon);
-	
-	(cdt->numberOfPolygons)++;
-	
-	// window edge (0,0) --> (size,0)
-	cdt->I_Segment[0].x0 = 0.0, cdt->I_Segment[0].y0 = 0.0; 
-	cdt->I_Segment[0].x1 = winSize, cdt->I_Segment[0].y1 = 0.0;
-	
-	// window edge (size,0) --> (size,size)
-	cdt->I_Segment[1].x0 = winSize, cdt->I_Segment[1].y0 = 0.0; 
-	cdt->I_Segment[1].x1 = winSize, cdt->I_Segment[1].y1 = winSize;
-	
-	// window edge (size,size) --> (0, size)
-	cdt->I_Segment[2].x0 = winSize, cdt->I_Segment[2].y0 = winSize; 
-	cdt->I_Segment[2].x1 = 0.0; cdt->I_Segment[2].y1 = winSize;
-	
-	// window edge (0, size) --> (0,0)
-	cdt->I_Segment[3].x0 = 0.0, cdt->I_Segment[3].y0 = winSize; 
-	cdt->I_Segment[3].x1 = 0.0; cdt->I_Segment[3].y1 = 0.0;
-	
-	cdt->numberOfI_Segments += 4;
-
-	for(is = 0; is < 4; is++){
-		cdt->I_Segment[is].beta = 0.0;
-		cdt->I_Segment[is].length = winSize;
-	} 	
 }
 
 /**
