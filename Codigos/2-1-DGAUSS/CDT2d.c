@@ -57,20 +57,22 @@ void InitCDT2d(CDT2d *cdt,unsigned long nVert, double *vertX, double *vertY){
 
 	//window edges (x,y) --> (vertX,vertY)
 	for (iVert = 0; iVert < nVert; iVert++){
-		if(iVert != nVert-1){
-			cdt->I_Segment[iVert].x0 = vertX[iVert], cdt->I_Segment[iVert].y0 = vertX[iVert];
-			cdt->I_Segment[iVert+1].x0 = vertX[iVert+1], cdt->I_Segment[iVert+1].y0 = vertX[iVert+1];
-		}
-		else
-		{
-			cdt->I_Segment[iVert].x0 = vertX[iVert], cdt->I_Segment[0].y0 = vertX[iVert];
-			cdt->I_Segment[iVert+1].x0 = vertX[0], cdt->I_Segment[iVert+1].y0 = vertX[0];
-		}
-		restX = cdt->I_Segment[iVert+1].x0 - cdt->I_Segment[iVert].x0;
-		restY = cdt->I_Segment[iVert+1].y0 - cdt->I_Segment[iVert].y0;
+		//if(iVert != nVert-1){
+			cdt->I_Segment[iVert].x0 = vertX[iVert], cdt->I_Segment[iVert].y0 = vertY[iVert];
+			cdt->I_Segment[iVert].x1 = vertX[(iVert+1)%nVert], cdt->I_Segment[iVert].y1 = vertY[(iVert+1)%nVert];
+		//}
+		//else
+		//{
+			//cdt->I_Segment[iVert].x0 = vertX[iVert], cdt->I_Segment[0].y0 = vertY[iVert];
+			//cdt->I_Segment[iVert].x1 = vertX[0], cdt->I_Segment[iVert].y1 = vertY[0];
+		//}
+		restX = cdt->I_Segment[iVert].x1 - cdt->I_Segment[iVert].x0;
+		restY = cdt->I_Segment[iVert].y1 - cdt->I_Segment[iVert].y0;
 		cdt->I_Segment[iVert].beta = 0.0;
 		cdt->I_Segment[iVert].length = sqrt((restX*restX) + (restY*restY));
 	}
+
+	cdt->numberOfI_Segments += nVert;
 
 	WidthFunction(cdt, cdt->Polygon);
 	PerimeterPolygon(cdt->Polygon);
