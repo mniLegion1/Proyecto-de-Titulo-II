@@ -34,38 +34,96 @@ int EmptyCDT2d(CDT2d *cdt, unsigned long size){
 	return 0;
 }
 
+/** 
+ 	@function: DeleteRepSegments
+	----------------------------
+**/
+unsigned long ReadFile(double *vertX, double *vertY){
+	FILE *ptr_file;
+	char buffer[1000], vert[10];
+	int j, k;
+	int iVert,nVertices, nCeldas;
+	
+	ptr_file = fopen("Vertices.txt","r");
+	fgets(buffer, 1000, ptr_file);
+	nCeldas = atoi(buffer);
+	printf("%d\n",nCeldas);
+
+	for(iVert = 0; iVert < nCeldas; iVert++){
+		fgets(buffer, 1000, ptr_file);
+		//printf("%s",buffer);
+		vert[0] = buffer[0];
+		nVertices = atoi(vert);
+		printf("%d ",nVertices);
+
+		j = 2;
+		while(1){
+			k = 0;
+			while(buffer[j] != ' '){
+				vert[k] = buffer[j];
+				j++; k++;
+			}
+			vertX[iVert] = atof(vert);
+			printf("%.8f ",vertX[iVert]);
+			
+			j++; k = 0;
+			while(buffer[j] != ' '){
+				vert[k] = buffer[j];
+				j++; k++;
+			}
+			vertY[iVert] = atof(vert);
+			printf("%.8f ",vertY[iVert]);
+			
+			if(buffer[j+2] == '\0'){
+				printf("\n");
+				break;
+			}
+			else
+				j++;
+		}
+	}
+
+	//printf("LLEGA");
+	fclose(ptr_file);
+	
+	return nCeldas;
+}
+
 /** @function: InitCDT2d
 	--------------------
 **/
 void InitCDT2d(CDT2d *cdt,unsigned long nVert, double *vertX, double *vertY){
+	
+	//ReadFile lo hago aqui
 	unsigned long iVert;
 	double restX, restY;
 	
 	// random seed is initialized.
  	srandom(time(NULL));
  	
-	cdt->Polygon[0].numberOfVertices = nVert;
+	 //Ciclo: Primera linea del archivo (N° de iteraciones)
+	cdt->Polygon[0].numberOfVertices = nVert;	//Poligono[0].nVertices = 6 (Primer elemento de cada linea)
 	cdt->Polygon[0].V = (double **)calloc2d(nVert, 2, sizeof(double));
 
-	//Polygon.V = vertX,vertY
-	for (iVert = 0; iVert < nVert; iVert++){
-		cdt->Polygon[0].V[iVert][0] = vertX[iVert];
-		cdt->Polygon[0].V[iVert][1] = vertY[iVert];
+	//Polygon[i].V = vertX,vertY
+	for (iVert = 0; iVert < nVert; iVert++){ 	//Cada X,Y en la linea
+		cdt->Polygon[0].V[iVert][0] = vertX[iVert]; cdt->Polygon[0].V[iVert][1] = vertY[iVert];
 	}
-		
+	
+
+	WidthFunction(cdt, cdt->Polygon);
+	PerimeterPolygon(cdt->Polygon);
+	AreaPolygon(cdt->Polygon);
+	RoundnessPolygon(cdt->Polygon);
+	
+
 	(cdt->numberOfPolygons)++;
 
 	//window edges (x,y) --> (vertX,vertY)
 	for (iVert = 0; iVert < nVert; iVert++){
-		//if(iVert != nVert-1){
 			cdt->I_Segment[iVert].x0 = vertX[iVert], cdt->I_Segment[iVert].y0 = vertY[iVert];
 			cdt->I_Segment[iVert].x1 = vertX[(iVert+1)%nVert], cdt->I_Segment[iVert].y1 = vertY[(iVert+1)%nVert];
-		//}
-		//else
-		//{
-			//cdt->I_Segment[iVert].x0 = vertX[iVert], cdt->I_Segment[0].y0 = vertY[iVert];
-			//cdt->I_Segment[iVert].x1 = vertX[0], cdt->I_Segment[iVert].y1 = vertY[0];
-		//}
+
 		restX = cdt->I_Segment[iVert].x1 - cdt->I_Segment[iVert].x0;
 		restY = cdt->I_Segment[iVert].y1 - cdt->I_Segment[iVert].y0;
 		cdt->I_Segment[iVert].beta = 0.0;
@@ -73,11 +131,6 @@ void InitCDT2d(CDT2d *cdt,unsigned long nVert, double *vertX, double *vertY){
 	}
 
 	cdt->numberOfI_Segments += nVert;
-
-	WidthFunction(cdt, cdt->Polygon);
-	PerimeterPolygon(cdt->Polygon);
-	AreaPolygon(cdt->Polygon);
-	RoundnessPolygon(cdt->Polygon);
 }
 
 /**
@@ -1154,8 +1207,8 @@ void StatSTIT(CDT2d *cdt){
 	//Area
 	sumValues = 0.;
 	for(i = 0; i < cdt->numberOfGaussPolygons; i++)
-		sumValues += cdt->GaussPolygon[i].wML * cdt->GaussPolygon[i].area;
-	mean = sumValues / sumWeights;
+		sumValues += /*cdt->GaussPolygon[i].wML * */cdt->GaussPolygon[i].area;
+	mean = sumValues / /*sumWeights */ cdt->numberOfGaussPolygons;
 	
 	sumValues = 0.;
 	for(i = 0; i < cdt->numberOfGaussPolygons; i++)

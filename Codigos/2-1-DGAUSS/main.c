@@ -50,23 +50,21 @@ int main(int argc, char *argv[]){
 	double timeGaussStop = atof(argv[4]);		//1000
 	double sigma = atof(argv[5]);				//0.1
 	double omg = atof(argv[6]);					//0.3
-	unsigned long nVert = atoi(argv[7]);		//1		//nVertices
+	//unsigned long nVert = atoi(argv[7]);		//1		//nVertices
 	
 	CDT2d cdt;
 
-	int iVert = 0;
+	unsigned long nCeldas;
 	double *vertX, *vertY;
 	vertX = Malloc(MAX_NUMBER_OF_DIR, double);
 	vertY = Malloc(MAX_NUMBER_OF_DIR, double);
-	while (iVert < nVert){
-		vertX[iVert] = atof(argv[8 + 2*iVert]);
-		vertY[iVert] = atof(argv[8 + 2*iVert + 1]);
-		iVert++;
-	}
-	
-	EmptyCDT2d(&cdt,1);
-	InitCDT2d(&cdt,nVert,vertX,vertY);
 
+
+	nCeldas = ReadFile(vertX, vertY);
+	//printf("Main: %ld",nCeldas);
+	EmptyCDT2d(&cdt,1);
+	//InitCDT2d(&cdt,nCeldas,vertX,vertY); 	//Solo el cdt
+	
 	// STIT Isotropic
 	if (option == 0){
 		STIT2dIso(&cdt, timeStop, lifeOption, omg);

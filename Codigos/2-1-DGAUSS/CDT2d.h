@@ -64,6 +64,7 @@ typedef struct CDT2d { // stands for Cell Division Tessellation
 } CDT2d;
 
 int EmptyCDT2d(CDT2d *, unsigned long size);
+unsigned long ReadFile(double *, double *);
 void InitCDT2d(CDT2d *,unsigned long nVert, double *, double *);
 int FreeCDT2d(CDT2d *);
 int SetPhiIso(CDT2d *);
