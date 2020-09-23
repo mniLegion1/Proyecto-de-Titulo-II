@@ -34,28 +34,37 @@ int EmptyCDT2d(CDT2d *cdt, unsigned long size){
 	return 0;
 }
 
+/** @function: nPolygonsCDT2d
+	-------------------------
+**/
+
+void nPolygonsCDT2d(CDT2d *cdt, unsigned long nCeldas){
+	(cdt->numberOfPolygons) = nCeldas;
+}
+
 /** 
- 	@function: DeleteRepSegments
+ 	@function: ReadFile
 	----------------------------
 **/
-unsigned long ReadFile(double *vertX, double *vertY){
+void ReadFile(CDT2d *cdt, double *vertX, double *vertY){
 	FILE *ptr_file;
 	char buffer[1000], vert[10];
 	int j, k;
-	int iVert,nVertices, nCeldas;
+	unsigned long iVert,nVertices, nCeldas;
 	
 	ptr_file = fopen("Vertices.txt","r");
 	fgets(buffer, 1000, ptr_file);
 	nCeldas = atoi(buffer);
-	printf("%d\n",nCeldas);
+	nPolygonsCDT2d(cdt,nCeldas);
 
 	for(iVert = 0; iVert < nCeldas; iVert++){
+		//Linea[0]
 		fgets(buffer, 1000, ptr_file);
 		vert[0] = buffer[0];
 		nVertices = atoi(vert);
-		printf("%d ",nVertices);
 
 		j = 2;
+		//X's e Y's de cada celda
 		while(1){
 			k = 0;
 			while(buffer[j] != ' '){
@@ -63,7 +72,6 @@ unsigned long ReadFile(double *vertX, double *vertY){
 				j++; k++;
 			}
 			vertX[iVert] = atof(vert);
-			printf("%f ",vertX[iVert]);
 			
 			j++; k = 0;
 			while(buffer[j] != ' '){
@@ -71,43 +79,37 @@ unsigned long ReadFile(double *vertX, double *vertY){
 				j++; k++;
 			}
 			vertY[iVert] = atof(vert);
-			printf("%f ",vertY[iVert]);
 			
 			if(buffer[j+2] == '\0'){
-				printf("\n");
 				break;
 			}
 			else
 				j++;
 		}
-		
+		//Ingreso al cdt de la celda
+		InitCDT2d(cdt,iVert,nVertices,vertX,vertY);
 	}
 
-	
 	fclose(ptr_file);
-	printf("LLEGA\n");
-	return nCeldas;
 }
 
 /** @function: InitCDT2d
 	--------------------
 **/
-void InitCDT2d(CDT2d *cdt,unsigned long nVert, double *vertX, double *vertY){
+void InitCDT2d(CDT2d *cdt, unsigned long iVert, unsigned long nVertices, double *vertX, double *vertY){
 	
-	//ReadFile lo hago aqui
-	unsigned long iVert;
+	unsigned long i;
 	double restX, restY;
 	
 	// random seed is initialized.
  	srandom(time(NULL));
  	
-	 //Ciclo: Primera linea del archivo (N° de iteraciones)
-	cdt->Polygon[0].numberOfVertices = nVert;	//Poligono[0].nVertices = 6 (Primer elemento de cada linea)
-	cdt->Polygon[0].V = (double **)calloc2d(nVert, 2, sizeof(double));
+	cdt->Polygon[iVert].numberOfVertices = nVertices;
+	cdt->Polygon[iVert].V = (double **)calloc2d(nVertices, 2, sizeof(double));
 
 	//Polygon[i].V = vertX,vertY
-	for (iVert = 0; iVert < nVert; iVert++){ 	//Cada X,Y en la linea
-		cdt->Polygon[0].V[iVert][0] = vertX[iVert]; cdt->Polygon[0].V[iVert][1] = vertY[iVert];
+	for (i = 0; i < nVertices; i++){ 	//Cada X,Y en la linea
+		cdt->Polygon[iVert].V[i][0] = vertX[i]; cdt->Polygon[iVert].V[i][1] = vertY[i];
 	}
 	
 
@@ -117,20 +119,21 @@ void InitCDT2d(CDT2d *cdt,unsigned long nVert, double *vertX, double *vertY){
 	RoundnessPolygon(cdt->Polygon);
 	
 
-	(cdt->numberOfPolygons)++;
+	//(cdt->numberOfPolygons)++;
 
 	//window edges (x,y) --> (vertX,vertY)
-	for (iVert = 0; iVert < nVert; iVert++){
-			cdt->I_Segment[iVert].x0 = vertX[iVert], cdt->I_Segment[iVert].y0 = vertY[iVert];
-			cdt->I_Segment[iVert].x1 = vertX[(iVert+1)%nVert], cdt->I_Segment[iVert].y1 = vertY[(iVert+1)%nVert];
+	for (i = 0; i < nVertices; i++){
+		cdt->I_Segment[i].x0 = vertX[iVert], cdt->I_Segment[i].y0 = vertY[i];
+		cdt->I_Segment[i].x1 = vertX[(i+1)%nVertices], cdt->I_Segment[i].y1 = vertY[(i+1)%nVertices];
 
-		restX = cdt->I_Segment[iVert].x1 - cdt->I_Segment[iVert].x0;
-		restY = cdt->I_Segment[iVert].y1 - cdt->I_Segment[iVert].y0;
-		cdt->I_Segment[iVert].beta = 0.0;
-		cdt->I_Segment[iVert].length = sqrt((restX*restX) + (restY*restY));
+		restX = cdt->I_Segment[i].x1 - cdt->I_Segment[i].x0;
+		restY = cdt->I_Segment[i].y1 - cdt->I_Segment[i].y0;
+		cdt->I_Segment[i].beta = 0.0;
+		cdt->I_Segment[i].length = sqrt((restX*restX) + (restY*restY));
 	}
 
-	cdt->numberOfI_Segments += nVert;
+	//Pasarlo al final de la lectura de todas las lineas
+	//cdt->numberOfI_Segments += nVert;
 }
 
 /**

@@ -64,8 +64,9 @@ typedef struct CDT2d { // stands for Cell Division Tessellation
 } CDT2d;
 
 int EmptyCDT2d(CDT2d *, unsigned long size);
-unsigned long ReadFile(double *, double *);
-void InitCDT2d(CDT2d *,unsigned long nVert, double *, double *);
+void ReadFile(CDT2d *cdt, double *, double *);
+void nPolygonsCDT2d(CDT2d *cdt, unsigned long nCeldas);
+void InitCDT2d(CDT2d *cdt, unsigned long iVert, unsigned long nVertices, double *vertX, double *vertY);
 int FreeCDT2d(CDT2d *);
 int SetPhiIso(CDT2d *);
 int SetPhiAniso(CDT2d *, double *, double *, unsigned long);

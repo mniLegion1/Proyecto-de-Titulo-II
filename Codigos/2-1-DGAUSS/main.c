@@ -54,15 +54,12 @@ int main(int argc, char *argv[]){
 	
 	CDT2d cdt;
 
-	unsigned long nCeldas;
 	double *vertX, *vertY;
 	vertX = Malloc(MAX_NUMBER_OF_DIR, double);
 	vertY = Malloc(MAX_NUMBER_OF_DIR, double);
 
-
-	nCeldas = ReadFile(vertX, vertY);
-	printf("Main: %ld",nCeldas);
 	EmptyCDT2d(&cdt,1);
+	ReadFile(&cdt,vertX, vertY);
 	//InitCDT2d(&cdt,nCeldas,vertX,vertY); 	//Solo el cdt
 	
 	// STIT Isotropic
