@@ -51,7 +51,6 @@ unsigned long ReadFile(double *vertX, double *vertY){
 
 	for(iVert = 0; iVert < nCeldas; iVert++){
 		fgets(buffer, 1000, ptr_file);
-		//printf("%s",buffer);
 		vert[0] = buffer[0];
 		nVertices = atoi(vert);
 		printf("%d ",nVertices);
@@ -64,7 +63,7 @@ unsigned long ReadFile(double *vertX, double *vertY){
 				j++; k++;
 			}
 			vertX[iVert] = atof(vert);
-			printf("%.8f ",vertX[iVert]);
+			printf("%f ",vertX[iVert]);
 			
 			j++; k = 0;
 			while(buffer[j] != ' '){
@@ -72,7 +71,7 @@ unsigned long ReadFile(double *vertX, double *vertY){
 				j++; k++;
 			}
 			vertY[iVert] = atof(vert);
-			printf("%.8f ",vertY[iVert]);
+			printf("%f ",vertY[iVert]);
 			
 			if(buffer[j+2] == '\0'){
 				printf("\n");
@@ -81,11 +80,12 @@ unsigned long ReadFile(double *vertX, double *vertY){
 			else
 				j++;
 		}
+		
 	}
 
-	//printf("LLEGA");
-	fclose(ptr_file);
 	
+	fclose(ptr_file);
+	printf("LLEGA\n");
 	return nCeldas;
 }
 

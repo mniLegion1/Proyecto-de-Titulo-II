@@ -61,7 +61,7 @@ int main(int argc, char *argv[]){
 
 
 	nCeldas = ReadFile(vertX, vertY);
-	//printf("Main: %ld",nCeldas);
+	printf("Main: %ld",nCeldas);
 	EmptyCDT2d(&cdt,1);
 	//InitCDT2d(&cdt,nCeldas,vertX,vertY); 	//Solo el cdt
 	
