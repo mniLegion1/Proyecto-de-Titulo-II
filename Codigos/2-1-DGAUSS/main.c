@@ -60,8 +60,8 @@ int main(int argc, char *argv[]){
 
 	EmptyCDT2d(&cdt,1);
 	ReadFile(&cdt,vertX, vertY);
-	//InitCDT2d(&cdt,nCeldas,vertX,vertY); 	//Solo el cdt
-	
+	printf("Vuelve al main");
+
 	// STIT Isotropic
 	if (option == 0){
 		STIT2dIso(&cdt, timeStop, lifeOption, omg);

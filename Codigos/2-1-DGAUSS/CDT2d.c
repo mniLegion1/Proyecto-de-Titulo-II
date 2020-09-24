@@ -34,13 +34,43 @@ int EmptyCDT2d(CDT2d *cdt, unsigned long size){
 	return 0;
 }
 
-/** @function: nPolygonsCDT2d
+/** @function: NumberSegmentsCDT2d
 	-------------------------
 **/
+void NumberSegmentsCDT2d(unsigned long iVert, unsigned long nVertices, double *segX, double *segY, double *vertX, double *vertY){
+	unsigned long i,j; 	//Seg,Vert
 
-void nPolygonsCDT2d(CDT2d *cdt, unsigned long nCeldas){
-	(cdt->numberOfPolygons) = nCeldas;
+	//2do...n poligonos
+	if(iVert != 0){
+		for(j = 0; j < nVertices; j++){
+			i = 0;
+			while(1){
+				if(segX[i] != vertX[j] && segY[i] != vertY[j]){
+					i++;
+				}
+				else
+					break;
+				
+				if(segX[i] == 0 && segY[i] == 0){
+					segX[i] = vertX[j]; segY[i] = vertY[j];
+					segX[i+1] = 0; segY[i+1] = 0;
+					break;
+				}
+			}
+		}
+	}
+	//1er poligono
+	else{
+		
+		for(i = 0; i < nVertices; i++){
+			segX[i] = vertX[i];
+			segY[i] = vertY[i];
+		}
+		segX[i+1] = 0;
+		segY[i+1] = 0;
+	}	
 }
+
 
 /** 
  	@function: ReadFile
@@ -48,49 +78,64 @@ void nPolygonsCDT2d(CDT2d *cdt, unsigned long nCeldas){
 **/
 void ReadFile(CDT2d *cdt, double *vertX, double *vertY){
 	FILE *ptr_file;
-	char buffer[1000], vert[10];
-	int j, k;
+	char buffer[500], vert[10];
+	int i, j, k;
 	unsigned long iVert,nVertices, nCeldas;
-	
+	double *segX, *segY;
+	segX = Malloc(MAX_NUMBER_OF_I_SEGMENTS, double);
+	segY = Malloc(MAX_NUMBER_OF_I_SEGMENTS, double);
+
+
 	ptr_file = fopen("Vertices.txt","r");
-	fgets(buffer, 1000, ptr_file);
+	fgets(buffer, 500, ptr_file);
 	nCeldas = atoi(buffer);
-	nPolygonsCDT2d(cdt,nCeldas);
+	cdt->numberOfPolygons = nCeldas;
 
 	for(iVert = 0; iVert < nCeldas; iVert++){
-		//Linea[0]
-		fgets(buffer, 1000, ptr_file);
+		fgets(buffer, 500, ptr_file);
 		vert[0] = buffer[0];
 		nVertices = atoi(vert);
 
-		j = 2;
+		i = 0; j = 2; 
 		//X's e Y's de cada celda
+		
 		while(1){
 			k = 0;
 			while(buffer[j] != ' '){
 				vert[k] = buffer[j];
 				j++; k++;
 			}
-			vertX[iVert] = atof(vert);
-			
+			vertX[i] = atof(vert);
+			//printf("%.6f ",vertX[i]);
+
 			j++; k = 0;
 			while(buffer[j] != ' '){
 				vert[k] = buffer[j];
 				j++; k++;
 			}
-			vertY[iVert] = atof(vert);
-			
+			vertY[i] = atof(vert);
+			//printf("%.6f ",vertY[i]);
+				
 			if(buffer[j+2] == '\0'){
+				//printf("\n");
+				
 				break;
 			}
-			else
-				j++;
+			else{
+				i++; j++;
+			}
+				
 		}
-		//Ingreso al cdt de la celda
+		NumberSegmentsCDT2d(iVert,nVertices,segX,segY,vertX,vertY);
 		InitCDT2d(cdt,iVert,nVertices,vertX,vertY);
 	}
+	iVert = 0;
+	while(segX[iVert] != 0 && segY[iVert] != 0)
+		iVert++;
 
+	cdt->numberOfI_Segments = iVert;
 	fclose(ptr_file);
+	printf("\n");
 }
 
 /** @function: InitCDT2d
@@ -118,7 +163,7 @@ void InitCDT2d(CDT2d *cdt, unsigned long iVert, unsigned long nVertices, double 
 	AreaPolygon(cdt->Polygon);
 	RoundnessPolygon(cdt->Polygon);
 	
-
+	//Cambiado a ReadFile
 	//(cdt->numberOfPolygons)++;
 
 	//window edges (x,y) --> (vertX,vertY)
@@ -132,7 +177,7 @@ void InitCDT2d(CDT2d *cdt, unsigned long iVert, unsigned long nVertices, double 
 		cdt->I_Segment[i].length = sqrt((restX*restX) + (restY*restY));
 	}
 
-	//Pasarlo al final de la lectura de todas las lineas
+	//Cambiado a ReadFile
 	//cdt->numberOfI_Segments += nVert;
 }
 
