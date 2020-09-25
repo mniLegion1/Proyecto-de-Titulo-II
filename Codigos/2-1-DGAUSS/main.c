@@ -59,8 +59,7 @@ int main(int argc, char *argv[]){
 	vertY = Malloc(MAX_NUMBER_OF_DIR, double);
 
 	EmptyCDT2d(&cdt,1);
-	ReadFile(&cdt,vertX, vertY);
-	printf("Vuelve al main");
+	ReadFile(&cdt,vertX,vertY);
 
 	// STIT Isotropic
 	if (option == 0){

@@ -82,23 +82,21 @@ void ReadFile(CDT2d *cdt, double *vertX, double *vertY){
 	int i, j, k;
 	unsigned long iVert,nVertices, nCeldas;
 	double *segX, *segY;
-	segX = Malloc(MAX_NUMBER_OF_I_SEGMENTS, double);
-	segY = Malloc(MAX_NUMBER_OF_I_SEGMENTS, double);
-
 
 	ptr_file = fopen("Vertices.txt","r");
 	fgets(buffer, 500, ptr_file);
 	nCeldas = atoi(buffer);
 	cdt->numberOfPolygons = nCeldas;
 
+	segX = Malloc(nCeldas*15, double);
+	segY = Malloc(nCeldas*15, double);
+
 	for(iVert = 0; iVert < nCeldas; iVert++){
 		fgets(buffer, 500, ptr_file);
 		vert[0] = buffer[0];
 		nVertices = atoi(vert);
 
-		i = 0; j = 2; 
-		//X's e Y's de cada celda
-		
+		i = 0; j = 2; 		
 		while(1){
 			k = 0;
 			while(buffer[j] != ' '){
@@ -135,14 +133,12 @@ void ReadFile(CDT2d *cdt, double *vertX, double *vertY){
 
 	cdt->numberOfI_Segments = iVert;
 	fclose(ptr_file);
-	printf("\n");
 }
 
 /** @function: InitCDT2d
 	--------------------
 **/
 void InitCDT2d(CDT2d *cdt, unsigned long iVert, unsigned long nVertices, double *vertX, double *vertY){
-	
 	unsigned long i;
 	double restX, restY;
 	
@@ -841,6 +837,7 @@ void RandomIntersectionPolygonDisturbed(CDT2d *cdt,unsigned long i,unsigned long
 	Isotropic STIT2d
 **/
 int STIT2dIso(CDT2d *cdt, double timeStop, unsigned long lOption, double omg){
+	
 	unsigned long i;
 	
 	// state variable, 0: stit process stops, 1: stit process continues.
@@ -865,10 +862,12 @@ int STIT2dIso(CDT2d *cdt, double timeStop, unsigned long lOption, double omg){
 	
 	// it assumes that the process continues.
 	stitStop = 1;
+	
 	do{
 		numPol = cdt->numberOfPolygons;
     	q = 0;
     	for(i = 0; i < numPol; i++){
+			printf("N° de I_Segments = %ld\n",cdt->numberOfI_Segments);
     		// checking if the polygon i must be divided.
       		if(cdt->Polygon[i].time < timeStop){
 				dirLine = RandomLinePolygon(cdt, i);
@@ -883,6 +882,7 @@ int STIT2dIso(CDT2d *cdt, double timeStop, unsigned long lOption, double omg){
 				}
 				
 				RandomIntersectionPolygon(cdt, i, numPol + q, dirLine, lOption, omg);
+				
 				q++;
 				(cdt->numberOfPolygons)++;
 				(cdt->numberOfI_Segments)++;
