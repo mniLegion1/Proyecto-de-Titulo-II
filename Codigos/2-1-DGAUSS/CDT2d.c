@@ -37,38 +37,55 @@ int EmptyCDT2d(CDT2d *cdt, unsigned long size){
 /** @function: NumberSegmentsCDT2d
 	-------------------------
 **/
-void NumberSegmentsCDT2d(unsigned long iVert, unsigned long nVertices, double *segX, double *segY, double *vertX, double *vertY){
+void NumberSegmentsCDT2d(CDT2d *cdt, unsigned long iVert, unsigned long nVertices, double *vertX, double *vertY){
 	unsigned long i,j; 	//Seg,Vert
+	double restX,restY;
+	double *segX, *segY;
+
+	segX = Malloc(3, double);
+	segY = Malloc(3, double);
 
 	//2do...n poligonos
+	
 	if(iVert != 0){
-		for(j = 0; j < nVertices; j++){
-			i = 0;
-			while(1){
-				if(segX[i] != vertX[j] && segY[i] != vertY[j]){
-					i++;
-				}
-				else
-					break;
-				
-				if(segX[i] == 0 && segY[i] == 0){
-					segX[i] = vertX[j]; segY[i] = vertY[j];
-					segX[i+1] = 0; segY[i+1] = 0;
-					break;
-				}
+		j = 0;
+		for(i = 0; i < nVertices; i++){
+			segX[0] = cdt->I_Segment[j].x0; segY[0] = cdt->I_Segment[j].y0;
+			segX[1] = cdt->I_Segment[j].x1; segY[1] = cdt->I_Segment[j].y1;
+
+			if((vertX[i] != segX[0] && vertY[i] != segY[0]) && (  vertX[(i+1)%nVertices] != segX[1] && vertY[(i+1)%nVertices] != segY[1])){
+				cdt->I_Segment[cdt->numberOfI_Segments].x0 = vertX[i], cdt->I_Segment[cdt->numberOfI_Segments].y0 = vertY[i];
+				cdt->I_Segment[cdt->numberOfI_Segments].x1 = vertX[(i+1)%nVertices], cdt->I_Segment[cdt->numberOfI_Segments].y1 = vertY[(i+1)%nVertices];
+
+				restX = cdt->I_Segment[cdt->numberOfI_Segments].x1 - cdt->I_Segment[cdt->numberOfI_Segments].x0;
+				restY = cdt->I_Segment[cdt->numberOfI_Segments].y1 - cdt->I_Segment[cdt->numberOfI_Segments].y0;
+
+				cdt->I_Segment[cdt->numberOfI_Segments].beta = 0.0;
+				cdt->I_Segment[cdt->numberOfI_Segments].length = sqrt((restX*restX) + (restY*restY));
+
+				cdt->numberOfI_Segments++;
 			}
+			
 		}
 	}
+	
 	//1er poligono
 	else{
-		
 		for(i = 0; i < nVertices; i++){
-			segX[i] = vertX[i];
-			segY[i] = vertY[i];
+			cdt->I_Segment[i].x0 = vertX[i], cdt->I_Segment[i].y0 = vertY[i];
+			cdt->I_Segment[i].x1 = vertX[(i+1)%nVertices], cdt->I_Segment[i].y1 = vertY[(i+1)%nVertices];
+			
+			restX = cdt->I_Segment[i].x1 - cdt->I_Segment[i].x0;
+			restY = cdt->I_Segment[i].y1 - cdt->I_Segment[i].y0;
+
+			cdt->I_Segment[i].beta = 0.0;
+			cdt->I_Segment[i].length = sqrt((restX*restX) + (restY*restY));
+			cdt->numberOfI_Segments++;
 		}
-		segX[i+1] = 0;
-		segY[i+1] = 0;
-	}	
+		cdt->I_Segment[i].x0 = 0, cdt->I_Segment[i].y0 = 0;
+		cdt->I_Segment[i].x1 = 0, cdt->I_Segment[i].y1 = 0;
+	}
+	
 }
 
 
@@ -81,15 +98,11 @@ void ReadFile(CDT2d *cdt, double *vertX, double *vertY){
 	char buffer[500], vert[10];
 	int i, j, k;
 	unsigned long iVert,nVertices, nCeldas;
-	double *segX, *segY;
 
 	ptr_file = fopen("Vertices.txt","r");
 	fgets(buffer, 500, ptr_file);
 	nCeldas = atoi(buffer);
 	cdt->numberOfPolygons = nCeldas;
-
-	segX = Malloc(nCeldas*15, double);
-	segY = Malloc(nCeldas*15, double);
 
 	for(iVert = 0; iVert < nCeldas; iVert++){
 		fgets(buffer, 500, ptr_file);
@@ -116,7 +129,6 @@ void ReadFile(CDT2d *cdt, double *vertX, double *vertY){
 				
 			if(buffer[j+2] == '\0'){
 				//printf("\n");
-				
 				break;
 			}
 			else{
@@ -124,15 +136,13 @@ void ReadFile(CDT2d *cdt, double *vertX, double *vertY){
 			}
 				
 		}
-		NumberSegmentsCDT2d(iVert,nVertices,segX,segY,vertX,vertY);
+		NumberSegmentsCDT2d(cdt,iVert,nVertices,vertX,vertY);
 		InitCDT2d(cdt,iVert,nVertices,vertX,vertY);
 	}
-	iVert = 0;
-	while(segX[iVert] != 0 && segY[iVert] != 0)
-		iVert++;
 
-	cdt->numberOfI_Segments = iVert;
+	//cdt->numberOfI_Segments = i;
 	fclose(ptr_file);
+	
 }
 
 /** @function: InitCDT2d
@@ -148,23 +158,19 @@ void InitCDT2d(CDT2d *cdt, unsigned long iVert, unsigned long nVertices, double 
 	cdt->Polygon[iVert].numberOfVertices = nVertices;
 	cdt->Polygon[iVert].V = (double **)calloc2d(nVertices, 2, sizeof(double));
 
-	//Polygon[i].V = vertX,vertY
-	for (i = 0; i < nVertices; i++){ 	//Cada X,Y en la linea
+	for (i = 0; i < nVertices; i++){
 		cdt->Polygon[iVert].V[i][0] = vertX[i]; cdt->Polygon[iVert].V[i][1] = vertY[i];
 	}
 	
-
-	WidthFunction(cdt, cdt->Polygon);
-	PerimeterPolygon(cdt->Polygon);
-	AreaPolygon(cdt->Polygon);
-	RoundnessPolygon(cdt->Polygon);
-	
+	WidthFunction(cdt, (cdt->Polygon) + iVert);
+	PerimeterPolygon((cdt->Polygon) + iVert);
+	AreaPolygon((cdt->Polygon) + iVert);
+	RoundnessPolygon((cdt->Polygon) + iVert);
 	//Cambiado a ReadFile
 	//(cdt->numberOfPolygons)++;
-
-	//window edges (x,y) --> (vertX,vertY)
+	
 	for (i = 0; i < nVertices; i++){
-		cdt->I_Segment[i].x0 = vertX[iVert], cdt->I_Segment[i].y0 = vertY[i];
+		cdt->I_Segment[i].x0 = vertX[i], cdt->I_Segment[i].y0 = vertY[i];
 		cdt->I_Segment[i].x1 = vertX[(i+1)%nVertices], cdt->I_Segment[i].y1 = vertY[(i+1)%nVertices];
 
 		restX = cdt->I_Segment[i].x1 - cdt->I_Segment[i].x0;
@@ -321,27 +327,29 @@ int SetPhiAnisoEllip(CDT2d *cdt, double bEllip){
 	-------------------
 **/
 void InitTime(CDT2d *cdt, unsigned long lOption){
-	unsigned long j;
+	unsigned long i,j;
 	double bPhi = 0.0;
-	
 	// The lifetime of the polygon is determined. The lifetime
 	// is exponentially distribuited with parameter bPhi, which is
 	// the weighted sum of the width and the weights are the probabilities
 	// Phi[j].
 	
-	// Perimeter
-	if(lOption == 0){
+	
+	for(i = 0; i < cdt->numberOfPolygons; i++){
+		// Perimeter
+		if(lOption == 0){
 		for(j = 0; j < NUMBER_OF_INT; j++){
-			bPhi += cdt->Polygon[0].B[j]*cdt->Phi[j];
+			bPhi += cdt->Polygon[i].B[j]*cdt->Phi[j];
 		}
-		cdt->Polygon[0].tau = RandomExponential(bPhi);
+		cdt->Polygon[i].tau = RandomExponential(bPhi);
+		}
+		// Area
+		else{
+			cdt->Polygon[i].tau = RandomExponential(cdt->Polygon[i].area);
+		}
+		cdt->Polygon[i].beta = 0.0;
+		cdt->Polygon[i].time = cdt->Polygon[i].beta + cdt->Polygon[i].tau;
 	}
-	// Area
-	else{
-		cdt->Polygon[0].tau = RandomExponential(cdt->Polygon[0].area);
-	}
-	cdt->Polygon[0].beta = 0.0;
-	cdt->Polygon[0].time = cdt->Polygon[0].beta + cdt->Polygon[0].tau;
 }
 
 /**
@@ -856,18 +864,22 @@ int STIT2dIso(CDT2d *cdt, double timeStop, unsigned long lOption, double omg){
 	
 	// phi and cumulative distribution function are computed.
 	SetPhiIso(cdt);
-	
+		
 	//lifetime of the first polygon (window) is computed.
 	InitTime(cdt, lOption);
+	for(i = 0; i < cdt->numberOfPolygons; i++){
+		
+	}
 	
 	// it assumes that the process continues.
 	stitStop = 1;
 	
 	do{
 		numPol = cdt->numberOfPolygons;
+		
     	q = 0;
     	for(i = 0; i < numPol; i++){
-			printf("N° de I_Segments = %ld\n",cdt->numberOfI_Segments);
+			
     		// checking if the polygon i must be divided.
       		if(cdt->Polygon[i].time < timeStop){
 				dirLine = RandomLinePolygon(cdt, i);
@@ -880,13 +892,12 @@ int STIT2dIso(CDT2d *cdt, double timeStop, unsigned long lOption, double omg){
 					printf("Number of I_Segments exceeds %dld\n", MAX_NUMBER_OF_I_SEGMENTS);
 					return 1;
 				}
-				
 				RandomIntersectionPolygon(cdt, i, numPol + q, dirLine, lOption, omg);
-				
 				q++;
 				(cdt->numberOfPolygons)++;
 				(cdt->numberOfI_Segments)++;
 			}
+			//printf("%f %f %f %f %f %ld %f %f %f %f\n",cdt->Polygon[i].area,cdt->Polygon[i].aspectRatio,cdt->Polygon[i].beta,cdt->Polygon[i].maxWidth,cdt->Polygon[i].minWidth,cdt->Polygon[i].numberOfVertices,cdt->Polygon[i].perimeter,cdt->Polygon[i].roundness,cdt->Polygon[i].tau,cdt->Polygon[i].wML);
 		}
 		// the proccess stops.
     	if(q == 0) stitStop = 0;
