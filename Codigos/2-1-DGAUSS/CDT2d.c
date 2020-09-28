@@ -48,24 +48,43 @@ void NumberSegmentsCDT2d(CDT2d *cdt, unsigned long iVert, unsigned long nVertice
 	//2do...n poligonos
 	
 	if(iVert != 0){
-		j = 0;
 		for(i = 0; i < nVertices; i++){
-			segX[0] = cdt->I_Segment[j].x0; segY[0] = cdt->I_Segment[j].y0;
-			segX[1] = cdt->I_Segment[j].x1; segY[1] = cdt->I_Segment[j].y1;
-
-			if((vertX[i] != segX[0] && vertY[i] != segY[0]) && (  vertX[(i+1)%nVertices] != segX[1] && vertY[(i+1)%nVertices] != segY[1])){
-				cdt->I_Segment[cdt->numberOfI_Segments].x0 = vertX[i], cdt->I_Segment[cdt->numberOfI_Segments].y0 = vertY[i];
-				cdt->I_Segment[cdt->numberOfI_Segments].x1 = vertX[(i+1)%nVertices], cdt->I_Segment[cdt->numberOfI_Segments].y1 = vertY[(i+1)%nVertices];
-
-				restX = cdt->I_Segment[cdt->numberOfI_Segments].x1 - cdt->I_Segment[cdt->numberOfI_Segments].x0;
-				restY = cdt->I_Segment[cdt->numberOfI_Segments].y1 - cdt->I_Segment[cdt->numberOfI_Segments].y0;
-
-				cdt->I_Segment[cdt->numberOfI_Segments].beta = 0.0;
-				cdt->I_Segment[cdt->numberOfI_Segments].length = sqrt((restX*restX) + (restY*restY));
-
-				cdt->numberOfI_Segments++;
-			}
+			j = 0;
 			
+			while(1){
+				segX[0] = cdt->I_Segment[j].x0; segY[0] = cdt->I_Segment[j].y0;
+				segX[1] = cdt->I_Segment[j].x1; segY[1] = cdt->I_Segment[j].y1;
+
+				if(segX[0] != 0 && segY[0] != 0 && segX[1] != 0 && segY[1] != 0){
+					if((vertX[i] == segX[1] && vertY[i] == segY[1]) && (vertX[(i+1)%nVertices] == segX[0] && vertY[(i+1)%nVertices] == segY[0])){
+						break;
+					}
+					else if((vertX[i] == segX[0] && vertY[i] == segY[0]) && (vertX[(i+1)%nVertices] == segX[1] && vertY[(i+1)%nVertices] == segY[1])){
+						break;
+					}
+					else{
+						j++;
+					}
+				}
+
+				else{
+					cdt->I_Segment[j].x0 = vertX[i], cdt->I_Segment[j].y0 = vertY[i];
+					cdt->I_Segment[j].x1 = vertX[(i+1)%nVertices], cdt->I_Segment[j].y1 = vertY[(i+1)%nVertices];
+
+					restX = cdt->I_Segment[j].x1 - cdt->I_Segment[j].x0;
+					restY = cdt->I_Segment[j].y1 - cdt->I_Segment[j].y0;
+
+					cdt->I_Segment[j].beta = 0.0;
+					cdt->I_Segment[j].length = sqrt((restX*restX) + (restY*restY));
+
+					cdt->numberOfI_Segments++;
+
+					cdt->I_Segment[j+1].x0 = 0, cdt->I_Segment[j+1].y0 = 0;
+					cdt->I_Segment[j+1].x1 = 0, cdt->I_Segment[j+1].y1 = 0;
+
+					break;
+				}
+			}
 		}
 	}
 	
@@ -85,7 +104,6 @@ void NumberSegmentsCDT2d(CDT2d *cdt, unsigned long iVert, unsigned long nVertice
 		cdt->I_Segment[i].x0 = 0, cdt->I_Segment[i].y0 = 0;
 		cdt->I_Segment[i].x1 = 0, cdt->I_Segment[i].y1 = 0;
 	}
-	
 }
 
 
@@ -117,7 +135,6 @@ void ReadFile(CDT2d *cdt, double *vertX, double *vertY){
 				j++; k++;
 			}
 			vertX[i] = atof(vert);
-			//printf("%.6f ",vertX[i]);
 
 			j++; k = 0;
 			while(buffer[j] != ' '){
@@ -125,10 +142,9 @@ void ReadFile(CDT2d *cdt, double *vertX, double *vertY){
 				j++; k++;
 			}
 			vertY[i] = atof(vert);
-			//printf("%.6f ",vertY[i]);
-				
+
 			if(buffer[j+2] == '\0'){
-				//printf("\n");
+
 				break;
 			}
 			else{
@@ -140,9 +156,7 @@ void ReadFile(CDT2d *cdt, double *vertX, double *vertY){
 		InitCDT2d(cdt,iVert,nVertices,vertX,vertY);
 	}
 
-	//cdt->numberOfI_Segments = i;
 	fclose(ptr_file);
-	
 }
 
 /** @function: InitCDT2d
@@ -150,7 +164,6 @@ void ReadFile(CDT2d *cdt, double *vertX, double *vertY){
 **/
 void InitCDT2d(CDT2d *cdt, unsigned long iVert, unsigned long nVertices, double *vertX, double *vertY){
 	unsigned long i;
-	double restX, restY;
 	
 	// random seed is initialized.
  	srandom(time(NULL));
@@ -166,21 +179,6 @@ void InitCDT2d(CDT2d *cdt, unsigned long iVert, unsigned long nVertices, double 
 	PerimeterPolygon((cdt->Polygon) + iVert);
 	AreaPolygon((cdt->Polygon) + iVert);
 	RoundnessPolygon((cdt->Polygon) + iVert);
-	//Cambiado a ReadFile
-	//(cdt->numberOfPolygons)++;
-	
-	for (i = 0; i < nVertices; i++){
-		cdt->I_Segment[i].x0 = vertX[i], cdt->I_Segment[i].y0 = vertY[i];
-		cdt->I_Segment[i].x1 = vertX[(i+1)%nVertices], cdt->I_Segment[i].y1 = vertY[(i+1)%nVertices];
-
-		restX = cdt->I_Segment[i].x1 - cdt->I_Segment[i].x0;
-		restY = cdt->I_Segment[i].y1 - cdt->I_Segment[i].y0;
-		cdt->I_Segment[i].beta = 0.0;
-		cdt->I_Segment[i].length = sqrt((restX*restX) + (restY*restY));
-	}
-
-	//Cambiado a ReadFile
-	//cdt->numberOfI_Segments += nVert;
 }
 
 /**

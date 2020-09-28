@@ -27,20 +27,19 @@ All STIT:
 	argv[3]: timeStop
 	argv[4]: timeGaussStop
 	argv[5]: sigma
-	argv[6]: window side length
-	argv[7]: omega
+	argv[6]: omega
 
 STIT Anisotropic / Anisotropic Disturbed:
-	argv[8]: nDir (number of directions)
-	argv[9 + 2*i]: angle dir[i]
-	argv[9 + 2*i + 1]: probability dir[i]
+	argv[7]: nDir (number of directions)
+	argv[8 + 2*i]: angle dir[i]
+	argv[8 + 2*i + 1]: probability dir[i]
 	for each i = 0,...,nDir - 1
 	
 Anisotropic Disturbed:
-	argv[9 + 2*nDir]: ellipse half axis b
+	argv[8 + 2*nDir]: ellipse half axis b
 
 Anisotropic Elliptic:
-	argv[8]: ellipse half axis b
+	argv[7]: ellipse half axis b
 */
 int main(int argc, char *argv[]){
 	
@@ -50,7 +49,6 @@ int main(int argc, char *argv[]){
 	double timeGaussStop = atof(argv[4]);		//1000
 	double sigma = atof(argv[5]);				//0.1
 	double omg = atof(argv[6]);					//0.3
-	//unsigned long nVert = atoi(argv[7]);		//1		//nVertices
 	
 	CDT2d cdt;
 
@@ -70,7 +68,7 @@ int main(int argc, char *argv[]){
 	}	
 	// STIT Anisotropic
 	else if ((option == 1) || (option == 2)){
-		unsigned long nDir = atoi(argv[8]);
+		unsigned long nDir = atoi(argv[7]);
 		double *angleDir, *probDir;
 		if (nDir > MAX_NUMBER_OF_DIR){	//MAX_NUMBER_OF_DIR = 32
 			fprintf(stderr,"The number of directions must be less or equal than %d.\n",MAX_NUMBER_OF_DIR);
@@ -80,8 +78,8 @@ int main(int argc, char *argv[]){
 		probDir = Malloc(MAX_NUMBER_OF_DIR, double);
 		int iDir = 0;
 		while (iDir < nDir){
-			angleDir[iDir] = atof(argv[9 + 2*iDir]);
-			probDir[iDir] = atof(argv[9 + 2*iDir + 1]);
+			angleDir[iDir] = atof(argv[8 + 2*iDir]);
+			probDir[iDir] = atof(argv[8 + 2*iDir + 1]);
 			iDir++;
 		}
 		if (option == 1){
@@ -91,7 +89,7 @@ int main(int argc, char *argv[]){
 			STIT2dGauss(&cdt, timeGaussStop, sigma, lifeOption, omg);
 		}
 		else{
-			double bEllip = atof(argv[9 + 2*nDir]);
+			double bEllip = atof(argv[8 + 2*nDir]);
 			STIT2dAnisoDisturbed(&cdt, timeStop, angleDir, probDir, nDir, bEllip, lifeOption, omg);		
 			//Gauss modification
 			NoBoundary(&cdt);
@@ -102,7 +100,7 @@ int main(int argc, char *argv[]){
 		Free(probDir);
 	}
 	else{
-		double bEllip = atof(argv[8]);
+		double bEllip = atof(argv[7]);
 		STIT2dAnisoEllip(&cdt, timeStop, bEllip, lifeOption, omg);
 		//Gauss modification
 		NoBoundary(&cdt);
