@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.18 (TeX Live 2017/Debian) (preloaded format=pdflatex 2020.9.12)  9 OCT 2020 23:25
+This is pdfTeX, Version 3.14159265-2.6-1.40.18 (TeX Live 2017/Debian) (preloaded format=pdflatex 2020.9.12)  14 OCT 2020 01:27
 entering extended mode
  restricted \write18 enabled.
  file:line:error style messages enabled.
@@ -331,8 +331,8 @@ Package: preview 2017/04/24 11.91 (AUCTeX/preview-latex)
 \pr@box=\box37
 \pr@output=\toks27
 )
-(/home/ubuntu-legion-pc/Desktop/Proyecto-de-Titulo-II/Codigos/2-1-DGAUSS/CDT2d.
-aux)
+(/home/ubuntu-legion-pc/Desktop/Proyecto-de-Titulo-II/Codigos/2-0-DSTIT/CDT2d.a
+ux)
 \openout1 = `CDT2d.aux'.
 
 LaTeX Font Info:    Checking defaults for OML/cmm/m/it on input line 6.
@@ -421,18 +421,18 @@ Preview: Fontsize 10pt
 Preview: PDFoutput 1
 Preview: Tightpage -32891 -32891 32891 32891
 [1]
-(/home/ubuntu-legion-pc/Desktop/Proyecto-de-Titulo-II/Codigos/2-1-DGAUSS/CDT2d.
-aux) ) 
+(/home/ubuntu-legion-pc/Desktop/Proyecto-de-Titulo-II/Codigos/2-0-DSTIT/CDT2d.a
+ux) ) 
 Here is how much of TeX's memory you used:
  11384 strings out of 494847
- 232667 string characters out of 6179080
- 366772 words of memory out of 5000000
+ 232662 string characters out of 6179080
+ 299130 words of memory out of 5000000
  14513 multiletter control sequences out of 15000+600000
  3640 words of font info for 14 fonts, out of 8000000 for 9000
  59 hyphenation exceptions out of 8191
  55i,2n,54p,440b,392s stack positions out of 5000i,500n,10000p,200000b,80000s
 
-Output written on CDT2d.pdf (1 page, 30134 bytes).
+Output written on CDT2d.pdf (1 page, 13665 bytes).
 PDF statistics:
  11 PDF objects out of 1000 (max. 8388607)
  7 compressed objects within 1 object stream

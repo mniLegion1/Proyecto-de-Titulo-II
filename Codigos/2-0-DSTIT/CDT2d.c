@@ -31,53 +31,151 @@ int EmptyCDT2d(CDT2d *cdt, unsigned long size){
 	return 0;
 }
 
-/** 
-@function: InitCDT2d
+/** @function: NumberSegmentsCDT2d
+	-------------------------
 **/
-void InitCDT2d(CDT2d *cdt){
-	unsigned long is;
-	double winSize = (double) (cdt->size);
+void NumberSegmentsCDT2d(CDT2d *cdt, unsigned long iCelda, unsigned long nVertices, double *vertX, double *vertY){
+	unsigned long i,j; 	//Seg,Vert
+	double restX,restY;
+	double *segX, *segY;
+
+	segX = Malloc(3, double);
+	segY = Malloc(3, double);
+
+	//2do...n poligonos
+	
+	if(iCelda != 0){
+		for(i = 0; i < nVertices; i++){
+			j = 0;
+			
+			while(1){
+				segX[0] = cdt->I_Segment[j].x0; segY[0] = cdt->I_Segment[j].y0;
+				segX[1] = cdt->I_Segment[j].x1; segY[1] = cdt->I_Segment[j].y1;
+
+				if(segX[0] != 0.000000 && segY[0] != 0.000000 && segX[1] != 0.000000 && segY[1] != 0.000000){
+					if((vertX[i] == segX[1] && vertY[i] == segY[1]) && (vertX[(i+1)%nVertices] == segX[0] && vertY[(i+1)%nVertices] == segY[0])){
+						break;
+					}
+					else if((vertX[i] == segX[0] && vertY[i] == segY[0]) && (vertX[(i+1)%nVertices] == segX[1] && vertY[(i+1)%nVertices] == segY[1])){
+						break;
+					}
+					else{
+						j++;
+					}
+				}
+
+				else{
+					cdt->I_Segment[j].x0 = vertX[i], cdt->I_Segment[j].y0 = vertY[i];
+					cdt->I_Segment[j].x1 = vertX[(i+1)%nVertices], cdt->I_Segment[j].y1 = vertY[(i+1)%nVertices];
+
+					restX = cdt->I_Segment[j].x1 - cdt->I_Segment[j].x0;
+					restY = cdt->I_Segment[j].y1 - cdt->I_Segment[j].y0;
+
+					cdt->I_Segment[j].beta = 0.0;
+					cdt->I_Segment[j].length = sqrt((restX*restX) + (restY*restY));
+
+					cdt->numberOfI_Segments++;
+
+					cdt->I_Segment[j+1].x0 = 0, cdt->I_Segment[j+1].y0 = 0;
+					cdt->I_Segment[j+1].x1 = 0, cdt->I_Segment[j+1].y1 = 0;
+
+					break;
+				}
+			}
+		}
+	}
+	
+	//1er poligono
+	else{
+		for(i = 0; i < nVertices; i++){
+			cdt->I_Segment[i].x0 = vertX[i], cdt->I_Segment[i].y0 = vertY[i];
+			cdt->I_Segment[i].x1 = vertX[(i+1)%nVertices], cdt->I_Segment[i].y1 = vertY[(i+1)%nVertices];
+			
+			restX = cdt->I_Segment[i].x1 - cdt->I_Segment[i].x0;
+			restY = cdt->I_Segment[i].y1 - cdt->I_Segment[i].y0;
+
+			cdt->I_Segment[i].beta = 0.0;
+			cdt->I_Segment[i].length = sqrt((restX*restX) + (restY*restY));
+			cdt->numberOfI_Segments++;
+		}
+		cdt->I_Segment[i].x0 = 0, cdt->I_Segment[i].y0 = 0;
+		cdt->I_Segment[i].x1 = 0, cdt->I_Segment[i].y1 = 0;
+	}
+}
+
+
+/** 
+ 	@function: ReadFile
+	----------------------------
+**/
+void ReadFile(CDT2d *cdt, double *vertX, double *vertY){
+	FILE *ptr_file;
+	char buffer[500], vert[10];
+	int i, j, k;
+	unsigned long iCelda,nVertices, nCeldas;
+
+	ptr_file = fopen("Vertices.txt","r");
+	fgets(buffer, 500, ptr_file);
+	nCeldas = atoi(buffer);
+	cdt->numberOfPolygons = nCeldas;
+
+	for(iCelda = 0; iCelda < nCeldas; iCelda++){
+		fgets(buffer, 500, ptr_file);
+		vert[0] = buffer[0];
+		nVertices = atoi(vert);
+
+		i = 0; j = 2; 		
+		while(1){
+			k = 0;
+			while(buffer[j] != ' '){
+				vert[k] = buffer[j];
+				j++; k++;
+			}
+			vertX[i] = atof(vert);
+
+			j++; k = 0;
+			while(buffer[j] != ' '){
+				vert[k] = buffer[j];
+				j++; k++;
+			}
+			vertY[i] = atof(vert);
+
+			if(buffer[j+2] == '\0'){
+
+				break;
+			}
+			else{
+				i++; j++;
+			}
+				
+		}
+		NumberSegmentsCDT2d(cdt,iCelda,nVertices,vertX,vertY);
+		InitCDT2d(cdt,iCelda,nVertices,vertX,vertY);
+	}	
+
+	fclose(ptr_file);
+}
+
+/** @function: InitCDT2d
+	--------------------
+**/
+void InitCDT2d(CDT2d *cdt, unsigned long iCelda, unsigned long nVertices, double *vertX, double *vertY){
+	unsigned long i;
 	
 	// random seed is initialized.
  	srandom(time(NULL));
  	
-	cdt->Polygon[0].numberOfVertices = 4;
-	cdt->Polygon[0].V = (double **)calloc2d(4, 2, sizeof(double));
+	cdt->Polygon[iCelda].numberOfVertices = nVertices;
+	cdt->Polygon[iCelda].V = (double **)calloc2d(nVertices, 2, sizeof(double));
 
-	cdt->Polygon[0].V[0][0] = 0.0; cdt->Polygon[0].V[0][1] = 0.0;
-	cdt->Polygon[0].V[1][0] = winSize; cdt->Polygon[0].V[1][1] = 0.0;
-	cdt->Polygon[0].V[2][0] = winSize; cdt->Polygon[0].V[2][1] = winSize;
-	cdt->Polygon[0].V[3][0] = 0.0; cdt->Polygon[0].V[3][1] = winSize;
+	for (i = 0; i < nVertices; i++){
+		cdt->Polygon[iCelda].V[i][0] = vertX[i]; cdt->Polygon[iCelda].V[i][1] = vertY[i];
+	}
 	
-	WidthFunction(cdt, cdt->Polygon);
-	PerimeterPolygon(cdt->Polygon);
-	AreaPolygon(cdt->Polygon);
-	RoundnessPolygon(cdt->Polygon);
-	
-	(cdt->numberOfPolygons)++;
-	
-	// window edge (0,0) --> (size,0)
-	cdt->I_Segment[0].x0 = 0.0, cdt->I_Segment[0].y0 = 0.0; 
-	cdt->I_Segment[0].x1 = winSize, cdt->I_Segment[0].y1 = 0.0;
-	
-	// window edge (size,0) --> (size,size)
-	cdt->I_Segment[1].x0 = winSize, cdt->I_Segment[1].y0 = 0.0; 
-	cdt->I_Segment[1].x1 = winSize, cdt->I_Segment[1].y1 = winSize;
-	
-	// window edge (size,size) --> (0, size)
-	cdt->I_Segment[2].x0 = winSize, cdt->I_Segment[2].y0 = winSize; 
-	cdt->I_Segment[2].x1 = 0.0; cdt->I_Segment[2].y1 = winSize;
-	
-	// window edge (0, size) --> (0,0)
-	cdt->I_Segment[3].x0 = 0.0, cdt->I_Segment[3].y0 = winSize; 
-	cdt->I_Segment[3].x1 = 0.0; cdt->I_Segment[3].y1 = 0.0;
-	
-	cdt->numberOfI_Segments += 4;
-
-	for(is = 0; is < 4; is++){
-		cdt->I_Segment[is].beta = 0.0;
-		cdt->I_Segment[is].length = winSize;
-	} 	
+	WidthFunction(cdt, (cdt->Polygon) + iCelda);
+	PerimeterPolygon((cdt->Polygon) + iCelda);
+	AreaPolygon((cdt->Polygon) + iCelda);
+	RoundnessPolygon((cdt->Polygon) + iCelda);
 }
 
 /**

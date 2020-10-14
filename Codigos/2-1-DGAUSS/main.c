@@ -50,6 +50,8 @@ int main(int argc, char *argv[]){
 	double sigma = atof(argv[5]);				//0.1
 	double omg = atof(argv[6]);					//0.3
 	
+	//printf("%ld %ld %.3f %.3f %.3f %.3f ",lifeOption,option,timeStop,timeGaussStop,sigma,omg);
+
 	CDT2d cdt;
 
 	double *vertX, *vertY;
@@ -69,6 +71,7 @@ int main(int argc, char *argv[]){
 	// STIT Anisotropic
 	else if ((option == 1) || (option == 2)){
 		unsigned long nDir = atoi(argv[7]);
+		//printf("%ld ",nDir);
 		double *angleDir, *probDir;
 		if (nDir > MAX_NUMBER_OF_DIR){	//MAX_NUMBER_OF_DIR = 32
 			fprintf(stderr,"The number of directions must be less or equal than %d.\n",MAX_NUMBER_OF_DIR);
@@ -80,6 +83,7 @@ int main(int argc, char *argv[]){
 		while (iDir < nDir){
 			angleDir[iDir] = atof(argv[8 + 2*iDir]);
 			probDir[iDir] = atof(argv[8 + 2*iDir + 1]);
+			//printf("%.3f %.3f ",angleDir[iDir],probDir[iDir]);
 			iDir++;
 		}
 		if (option == 1){
@@ -90,6 +94,7 @@ int main(int argc, char *argv[]){
 		}
 		else{
 			double bEllip = atof(argv[8 + 2*nDir]);
+			//printf("%.3f ",bEllip);
 			STIT2dAnisoDisturbed(&cdt, timeStop, angleDir, probDir, nDir, bEllip, lifeOption, omg);		
 			//Gauss modification
 			NoBoundary(&cdt);
@@ -101,12 +106,13 @@ int main(int argc, char *argv[]){
 	}
 	else{
 		double bEllip = atof(argv[7]);
+		//printf("%.3f ",bEllip);
 		STIT2dAnisoEllip(&cdt, timeStop, bEllip, lifeOption, omg);
 		//Gauss modification
 		NoBoundary(&cdt);
 		STIT2dGaussDisturbed(&cdt, timeGaussStop, sigma, bEllip, lifeOption, omg);
 	}
-	
+	//printf("\n");
 	//ImageCDT2d(&cdt, &image, "CDT2d");
 	StatSTIT(&cdt);
 	PlotCDT2d(&cdt);

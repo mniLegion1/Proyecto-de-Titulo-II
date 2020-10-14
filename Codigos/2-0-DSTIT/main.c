@@ -23,33 +23,37 @@ argv[2]: STIT option (0: Iso, 1: Aniso, 2: AnisoDisturbed, 3: AnisoEllip)
 
 All STIT:
 	argv[3]: timeStop
-	argv[4]: window side length
-	argv[5]: omega
+	argv[4]: omega
 
 STIT Anisotropic / Anisotropic Disturbed:
-	argv[6]: nDir (number of directions)
-	argv[7 + 2*i]: angle dir[i]
-	argv[7 + 2*i + 1]: probability dir[i]
+	argv[5]: nDir (number of directions)
+	argv[6 + 2*i]: angle dir[i]
+	argv[6 + 2*i + 1]: probability dir[i]
 	for each i = 0,...,nDir - 1
 	
 Anisotropic Disturbed:
-	argv[7 + 2*nDir]: ellipse half axis b
+	argv[6 + 2*nDir]: ellipse half axis b
 
 Anisotropic Elliptic:
-	argv[6]: ellipse half axis b
+	argv[5]: ellipse half axis b
 */
 int main(int argc, char *argv[]){
 	
-	unsigned long lifeOption = atoi(argv[1]);
-	unsigned long option = atoi(argv[2]);
-	double timeStop = atof(argv[3]);
-	unsigned long a = atoi(argv[4]);
-	double omg = atof(argv[5]);
+	unsigned long lifeOption = atoi(argv[1]);	//0
+	unsigned long option = atoi(argv[2]);		//0
+	double timeStop = atof(argv[3]);			//200
+	double omg = atof(argv[4]);					//0.3
 	
+	printf("%ld %ld %.3f %.3f ",lifeOption,option,timeStop,omg);
+
 	CDT2d cdt;
 	
-	EmptyCDT2d(&cdt,a);
-	InitCDT2d(&cdt);
+	double *vertX, *vertY;
+	vertX = Malloc(MAX_NUMBER_OF_DIR, double);
+	vertY = Malloc(MAX_NUMBER_OF_DIR, double);
+
+	EmptyCDT2d(&cdt,1);
+	ReadFile(&cdt,vertX,vertY);
 
 	// STIT Isotropic
 	if (option == 0){
@@ -57,7 +61,8 @@ int main(int argc, char *argv[]){
 	}	
 	// STIT Anisotropic
 	else if ((option == 1) || (option == 2)){
-		unsigned long nDir = atoi(argv[6]);
+		unsigned long nDir = atoi(argv[5]);
+		printf("%ld ",nDir);
 		double *angleDir, *probDir;
 		if (nDir > MAX_NUMBER_OF_DIR){
 			fprintf(stderr,"The number of directions must be less or equal than %d.\n",MAX_NUMBER_OF_DIR);
@@ -67,15 +72,17 @@ int main(int argc, char *argv[]){
 		probDir = Malloc(MAX_NUMBER_OF_DIR, double);
 		int iDir = 0;
 		while (iDir < nDir){
-			angleDir[iDir] = atof(argv[7 + 2*iDir]);
-			probDir[iDir] = atof(argv[7 + 2*iDir + 1]);
+			angleDir[iDir] = atof(argv[6 + 2*iDir]);
+			probDir[iDir] = atof(argv[6 + 2*iDir + 1]);
+			printf("%.3f %.3f ",angleDir[iDir],probDir[iDir]);
 			iDir++;
 		}
 		if (option == 1){
 			STIT2dAniso(&cdt, timeStop, angleDir, probDir, nDir, lifeOption, omg);
 		}
 		else{
-			double bEllip = atof(argv[7 + 2*nDir]);
+			double bEllip = atof(argv[6 + 2*nDir]);
+			printf("%.3f ",bEllip);
 			STIT2dAnisoDisturbed(&cdt, timeStop, angleDir, probDir, nDir, bEllip, lifeOption, omg);		
 		}
 
@@ -83,10 +90,11 @@ int main(int argc, char *argv[]){
 		Free(probDir);
 	}
 	else{
-		double bEllip = atof(argv[6]);
+		double bEllip = atof(argv[5]);
+		printf("%.3f ",bEllip);
 		STIT2dAnisoEllip(&cdt, timeStop, bEllip, lifeOption, omg);
 	}
-
+	printf("\n");
 	//ImageCDT2d(&cdt, &image, "CDT2d");
 	NoBoundary(&cdt);
 	StatSTIT(&cdt);
