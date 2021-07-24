@@ -34,8 +34,9 @@ int EmptyCDT2d(CDT2d *cdt, unsigned long size){
 	return 0;
 }
 
-/** @function: NumberSegmentsCDT2d
-	-------------------------
+/** 
+	@function: NumberSegmentsCDT2d
+	------------------------------
 **/
 void NumberSegmentsCDT2d(CDT2d *cdt, unsigned long iCelda, unsigned long nVertices, double *vertX, double *vertY){
 	unsigned long i,j; 	//Seg,Vert
@@ -109,7 +110,7 @@ void NumberSegmentsCDT2d(CDT2d *cdt, unsigned long iCelda, unsigned long nVertic
 
 /** 
  	@function: ReadFile
-	----------------------------
+	-------------------
 **/
 void ReadFile(CDT2d *cdt, double *vertX, double *vertY){
 	FILE *ptr_file;
@@ -159,7 +160,8 @@ void ReadFile(CDT2d *cdt, double *vertX, double *vertY){
 	fclose(ptr_file);
 }
 
-/** @function: InitCDT2d
+/** 
+	@function: InitCDT2d
 	--------------------
 **/
 void InitCDT2d(CDT2d *cdt, unsigned long iCelda, unsigned long nVertices, double *vertX, double *vertY){
